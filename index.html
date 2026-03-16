@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Article Access Tools</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0e0f;
+    --surface: #161618;
+    --border: #2a2a2e;
+    --accent: #e8c547;
+    --accent-dim: rgba(232, 197, 71, 0.12);
+    --text: #d4d4d8;
+    --text-muted: #71717a;
+    --text-bright: #fafafa;
+    --green: #4ade80;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --purple: #c084fc;
+    --orange: #fb923c;
+    --teal: #2dd4bf;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 20px;
+  }
+
+  header { text-align: center; margin-bottom: 40px; }
+
+  .logo {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-bright);
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+
+  .container { width: 100%; max-width: 760px; }
+
+  .input-row { display: flex; gap: 10px; margin-bottom: 28px; }
+
+  input[type="url"] {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--text-bright);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input[type="url"]::placeholder { color: var(--text-muted); }
+  input[type="url"]:focus { border-color: var(--accent); }
+
+  button.generate {
+    background: var(--accent);
+    color: #0e0e0f;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+  }
+  button.generate:hover { opacity: 0.88; }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    padding-left: 2px;
+  }
+
+  .quick-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .quick-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color 0.15s;
+  }
+  .quick-card:hover { border-color: #3f3f46; }
+
+  .quick-card-header { display: flex; align-items: center; gap: 8px; }
+
+  .card-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .quick-card-name { font-size: 13px; font-weight: 600; color: var(--text-bright); }
+
+  .quick-card-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'IBM Plex Sans', sans-serif;
+    line-height: 1.5;
+    flex: 1;
+  }
+
+  .quick-card-actions { display: flex; gap: 6px; margin-top: 4px; }
+
+  .cards { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: border-color 0.15s;
+  }
+  .card:hover { border-color: #3f3f46; }
+
+  .card-info { flex: 1; min-width: 0; }
+  .card-name { font-size: 12px; font-weight: 600; color: var(--text-bright); margin-bottom: 3px; }
+  .card-desc { font-size: 11px; color: var(--text-muted); font-family: 'IBM Plex Sans', sans-serif; }
+  .card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .btn-open, .btn-copy {
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: all 0.12s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-open {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-color: rgba(232, 197, 71, 0.25);
+  }
+  .btn-open:hover { background: rgba(232, 197, 71, 0.2); }
+  .btn-open.disabled { opacity: 0.3; pointer-events: none; }
+
+  .btn-copy { background: transparent; color: var(--text-muted); }
+  .btn-copy:hover { color: var(--text); border-color: #52525b; }
+  .btn-copy.copied { color: var(--green); border-color: rgba(74, 222, 128, 0.3); }
+
+  details { margin-bottom: 20px; }
+
+  summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    user-select: none;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  summary:hover { color: var(--text); border-color: #3f3f46; }
+  summary::-webkit-details-marker { display: none; }
+
+  .summary-arrow { display: inline-block; transition: transform 0.2s; }
+  details[open] summary .summary-arrow { transform: rotate(90deg); }
+
+  .notice {
+    background: rgba(251, 146, 60, 0.08);
+    border: 1px solid rgba(251, 146, 60, 0.2);
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 11px;
+    color: var(--orange);
+    font-family: 'IBM Plex Sans', sans-serif;
+    line-height: 1.6;
+    margin-top: 8px;
+  }
+  .notice strong { font-weight: 600; }
+
+  .dot-google  { background: var(--blue); }
+  .dot-reader  { background: var(--green); }
+  .dot-archive { background: var(--purple); }
+  .dot-proxy   { background: var(--red); }
+  .dot-ai      { background: var(--teal); }
+
+  .empty-state { text-align: center; padding: 32px 0; color: var(--text-muted); font-size: 12px; }
+  .empty-state .icon { font-size: 28px; margin-bottom: 10px; }
+
+  @media (max-width: 560px) { .quick-cards { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">// access tools</div>
+  <h1>Article Access Generator</h1>
+  <p class="subtitle">Paste a URL to generate alternative access links — reader views, caches, archives &amp; referrer tricks.</p>
+</header>
+
+<div class="container">
+  <div class="input-row">
+    <input type="url" id="urlInput" placeholder="https://example.com/article/..." autofocus />
+    <button class="generate" onclick="generate()">Generate →</button>
+  </div>
+  <div id="output">
+    <div class="empty-state">
+      <div class="icon">🔗</div>
+      Enter a URL above to generate access options.
+    </div>
+  </div>
+</div>
+
+<script>
+const QUICK = [
+  {
+    name: "Google Redirect",
+    dot: "dot-google",
+    desc: "Routes via Google's outbound redirect — many publishers grant full access when the Referer header appears to be Google.",
+    build: url => `https://www.google.com/url?sa=E&q=${encodeURIComponent(url)}`
+  },
+  {
+    name: "Jina Reader",
+    dot: "dot-reader",
+    desc: "Renders the article as clean Markdown via r.jina.ai — strips ads, nav, and paywalls on many sites.",
+    build: url => `https://r.jina.ai/${url}`
+  },
+  {
+    name: "Archive.today",
+    dot: "dot-archive",
+    desc: "Searches archive.ph for an existing snapshot. Often captures articles before the paywall was enforced.",
+    build: url => `https://archive.ph/${url}`
+  },
+];
+
+const EXTENDED = [
+  {
+    group: "Referrer / Crawler Tricks",
+    items: [
+      {
+        name: "Google AMP Cache",
+        dot: "dot-google",
+        desc: "Attempts to load Google's AMP-cached version. Works only if the publisher supports AMP — hit-or-miss.",
+        build: url => {
+          try {
+            const u = new URL(url);
+            const host = u.hostname.replace(/\./g, '-');
+            return `https://${host}.cdn.ampproject.org/v/s/${u.hostname}${u.pathname}${u.search}`;
+          } catch { return null; }
+        }
+      },
+      {
+        name: "Burner.kz",
+        dot: "dot-proxy",
+        desc: "Community-built post-12ft tool — spoofs a Googlebot user-agent to fetch the page server-side.",
+        build: url => `https://burner.kz/${url}`
+      },
+      {
+        name: "1ft.io",
+        dot: "dot-proxy",
+        desc: "Another 12ft-style Googlebot UA spoof. Try alongside Burner.kz — reliability varies by site.",
+        build: url => `https://1ft.io/${url}`
+      },
+      {
+        name: "Paywall.vip",
+        dot: "dot-proxy",
+        desc: "Prepends paywall.vip/ and attempts a server-side fetch that bypasses cookie and JS-based paywalls.",
+        build: url => `https://paywall.vip/${url}`
+      },
+    ]
+  },
+  {
+    group: "Reader & Text Extraction",
+    items: [
+      {
+        name: "smry.ai",
+        dot: "dot-ai",
+        desc: "Fetches and presents the full article with an optional AI summary. Good fallback if Jina doesn't parse cleanly.",
+        build: url => `https://smry.ai/${url}`
+      },
+      {
+        name: "FiveFilters PDF",
+        dot: "dot-reader",
+        desc: "Long-running open-source project. Extracts article text and renders as a clean downloadable PDF.",
+        build: url => `https://pdf.fivefilters.org/?url=${encodeURIComponent(url)}`
+      },
+      {
+        name: "RemovePaywall.com",
+        dot: "dot-reader",
+        desc: "Searches multiple internet archives simultaneously and presents the first clean hit. Covers Bloomberg, NYT, WSJ, FT, Guardian and hundreds more.",
+        build: url => `https://www.removepaywall.com/search?url=${encodeURIComponent(url)}`
+      },
+    ]
+  },
+  {
+    group: "Wayback Machine & Archives",
+    items: [
+      {
+        name: "Wayback Machine (latest snapshot)",
+        dot: "dot-archive",
+        desc: "Loads the most recent crawl from the Internet Archive. Best for older articles captured before a paywall was added.",
+        build: url => `https://web.archive.org/web/${url}`
+      },
+      {
+        name: "Wayback Machine (save now)",
+        dot: "dot-archive",
+        desc: "Requests a fresh snapshot be saved right now — useful for archiving before a paywall tightens.",
+        build: url => `https://web.archive.org/save/${url}`
+      },
+      {
+        name: "Archive.today (new snapshot)",
+        dot: "dot-archive",
+        desc: "Requests archive.ph to take a new snapshot immediately — useful when no prior snapshot exists.",
+        build: url => `https://archive.ph/submit/?url=${encodeURIComponent(url)}`
+      },
+    ]
+  },
+];
+
+function generate() {
+  const raw = document.getElementById('urlInput').value.trim();
+  if (!raw) return;
+  let url = raw;
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+  let html = '';
+
+  html += `<div class="section-label">Quick Access</div><div class="quick-cards">`;
+  for (const tool of QUICK) {
+    const built = tool.build(url);
+    html += `
+      <div class="quick-card">
+        <div class="quick-card-header">
+          <div class="card-dot ${tool.dot}"></div>
+          <div class="quick-card-name">${tool.name}</div>
+        </div>
+        <div class="quick-card-desc">${tool.desc}</div>
+        <div class="quick-card-actions">
+          <a class="btn-open ${built ? '' : 'disabled'}" href="${built || '#'}" target="_blank" rel="noopener">Open ↗</a>
+          <button class="btn-copy" onclick="copyLink(this, ${JSON.stringify(built || '')})">Copy</button>
+        </div>
+      </div>`;
+  }
+  html += `</div>`;
+
+  html += `<details><summary><span class="summary-arrow">▶</span>&nbsp; More options</summary><div style="padding-top:4px">`;
+
+  for (const group of EXTENDED) {
+    html += `<div class="section-label">${group.group}</div><div class="cards">`;
+    for (const tool of group.items) {
+      const built = tool.build(url);
+      html += `
+        <div class="card">
+          <div class="card-dot ${tool.dot}"></div>
+          <div class="card-info">
+            <div class="card-name">${tool.name}</div>
+            <div class="card-desc">${tool.desc}</div>
+          </div>
+          <div class="card-actions">
+            <a class="btn-open ${built ? '' : 'disabled'}" href="${built || '#'}" target="_blank" rel="noopener">Open ↗</a>
+            <button class="btn-copy" onclick="copyLink(this, ${JSON.stringify(built || '')})">Copy</button>
+          </div>
+        </div>`;
+    }
+    html += `</div>`;
+  }
+
+  html += `</div></details>`;
+
+  html += `<div class="notice">
+    <strong>Note:</strong> Effectiveness varies by publisher and paywall type.
+    Google Redirect and Jina are the most consistent for soft paywalls.
+    Archive.today is best for previously-crawled articles.
+    Crawler-spoof tools (Burner.kz, 1ft, Paywall.vip) are functionally similar to the defunct 12ft — treat their longevity as uncertain.
+  </div>`;
+
+  document.getElementById('output').innerHTML = html;
+}
+
+function copyLink(btn, url) {
+  if (!url) return;
+  navigator.clipboard.writeText(url).then(() => {
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+document.getElementById('urlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') generate();
+});
+</script>
+</body>
+</html>
